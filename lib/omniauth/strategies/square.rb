@@ -5,7 +5,7 @@ module OmniAuth
     class Square < OmniAuth::Strategies::OAuth2
 
       option :client_options, {
-        :site          => 'https://squareup.com/',
+        :site          => 'https://connect.squareup.com',
         :connect_site  => 'https://connect.squareup.com',
         :authorize_url => '/oauth2/authorize',
         :token_url     => '/oauth2/token'
@@ -15,10 +15,10 @@ module OmniAuth
 
       info do
         prune!(
-          :name     => raw_info["name"],
+          :name     => "#{raw_info['first_name']} #{raw_info['last_name']}",
           :email    => raw_info["email"],
-          :phone    => (raw_info["business_phone"]||{}).values.join(''),
-          :location => (raw_info["business_address"]||{})["locality"]
+          :business_name => raw_info[:location]['name'],
+          :merchant_id => raw_info[:location]['merchant_id']
         )
       end
 
@@ -26,8 +26,16 @@ module OmniAuth
         { :raw_info => raw_info }
       end
 
+      def authorize_params
+        super.merge(grant_type: options.grant_type)
+      end
+
       def raw_info
-        @raw_info ||= access_token.get('/v1/me').parsed
+        locations = access_token.get('/v2/locations').parsed
+        location_id = locations['locations'][0]['id']
+        employees = access_token.get('/v2/employees', {location_id: location_id}).parsed
+        owner = employees['employees'].detect { |e| e['is_owner'] }
+        @raw_info ||= owner.merge(location: locations['locations'][0])
       end
 
       def callback_url
@@ -61,7 +69,8 @@ module OmniAuth
       def access_token_request_payload
         params = {
           :code         => request.params['code'],
-          :redirect_uri => callback_url
+          :redirect_uri => callback_url,
+          :grant_type   => options.grant_type
         }
 
         params.merge! client_params
