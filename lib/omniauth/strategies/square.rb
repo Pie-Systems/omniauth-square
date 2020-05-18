@@ -8,7 +8,8 @@ module OmniAuth
         :site          => 'https://connect.squareup.com',
         :connect_site  => 'https://connect.squareup.com',
         :authorize_url => '/oauth2/authorize',
-        :token_url     => '/oauth2/token'
+        :token_url     => '/oauth2/token',
+        :grant_type    => 'authorization_code'
       }
 
       uid { raw_info['id'] }
@@ -27,7 +28,7 @@ module OmniAuth
       end
 
       def authorize_params
-        super.merge(grant_type: options.grant_type)
+        super.merge(grant_type: options.client_options.grant_type)
       end
 
       def raw_info
@@ -70,7 +71,7 @@ module OmniAuth
         params = {
           :code         => request.params['code'],
           :redirect_uri => callback_url,
-          :grant_type   => options.grant_type
+          :grant_type   => options.client_options.grant_type
         }
 
         params.merge! client_params
