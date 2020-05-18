@@ -2,30 +2,33 @@
 
 This gem contains the Square strategy for OmniAuth.
 
-Square uses the OAuth2 flow, you can read about it here: http://connect.squareup.com
+Square uses the OAuth2 flow, you can read about it here: https://developer.squareup.com/docs/auth.
+
+```ruby
+```
 
 ## How To Use It
 
-So let's say you're using Rails, you need to add the strategy to your `Gemfile`:
+Add the strategy to your `Gemfile`:
 
-    gem 'omniauth-square'
+    gem 'omniauth-square', git: 'https://github.com/ajsharp/omniauth-square.git'
 
-You can pull it in directly from github (if you really want to) e.g.:
+Add the following to your `config/initializers/omniauth.rb`:
+```ruby
+Rails.application.config.middleware.use OmniAuth::Builder do
+  provider :square, "consumer_key", "consumer_secret",
+    {
+      client_options: {
+        connect_site: Rails.env.production? ? 'https://connect.squareup.com' : 'https://connect.squareupsandbox.com',
+        site: Rails.env.production? ? 'https://connect.squareup.com' : 'https://connect.squareupsandbox.com'
+      },
+      scope: 'MERCHANT_PROFILE_READ EMPLOYEES_READ',
+      raise_errors: true
+    }
+end
+```
 
-    gem 'omniauth-square', git: 'https://github.com/bigcommerce/omniauth-square.git'
-
-Once these are in, you need to add the following to your `config/initializers/omniauth.rb`:
-
-    Rails.application.config.middleware.use OmniAuth::Builder do
-      provider :square, "consumer_key", "consumer_secret",
-      	{
-      		connect_site: 'https://connect.squareup.com'
-      	}
-    end
-
-You will obviously have to put in your key and secret, which you get when you register your app with Square (they call them Application Key and Secret Key).
-
-Now just follow the README at: https://github.com/intridea/omniauth
+**Note:** Square uses a separate url for it's sandbox environment. The example above uses a sandbox URL in a non-production environment.
 
 ## License
 
