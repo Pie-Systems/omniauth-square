@@ -4,8 +4,9 @@ This gem contains the Square strategy for OmniAuth.
 
 Square uses the OAuth2 flow, you can read about it here: https://developer.squareup.com/docs/auth.
 
-```ruby
-```
+## Scopes
+
+This gem requires at least the following two scopes: `MERCHANT_PROFILE_READ` and `EMPLOYEES_READ`. See a full list of scopes [here](https://developer.squareup.com/docs/oauth-api/square-permissions).
 
 ## How To Use It
 
